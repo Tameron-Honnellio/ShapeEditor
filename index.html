@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShapeEditor</title>
+    <script src='fabric.min.js'></script>
+</head>
+<body>
+    <label>Shapes:</label>
+    <select name="Shapes" id="Shapes" onchange="setDrawMode(this)">
+      <option value="None">None</option>
+      <option value="Line">Line</option>
+      <option value="PolyLine">PolyLine</option>
+      <option value="Triangle">Triangle</option>
+      <option value="Rectangle">Rectangle</option>
+      <option value="Polygon">Polygon</option>
+      <option value="Circle">Circle</option>
+      <option value="Ellipse">Ellipse</option>
+      <option value="Curve">Curve</option>
+    </select>
+    <label>Color:</label>
+    <input type="color" id="color" onchange="setColor(this)">
+
+    <canvas id='canvas'></canvas>
+    <script src='main.js'></script>
+</body>
+</html>
