@@ -11,6 +11,8 @@ var pts = [];
 const numLinePts = 2;
 const numTrianglePts = 3;
 const numRectanglePts = 2;
+const numCirclePts = 2;
+const numCurvePts = 3;
 
 // Initializer for fabric canvas
 function init() {
@@ -83,10 +85,19 @@ function draw(xPos, yPos) {
         case 'Polygon':
             break;
         case 'Circle':
+            if (pts.length == numCirclePts) {
+                drawCircle();
+            }
             break;
         case 'Ellipse':
+            if (pts.length == numCirclePts) {
+                drawEllipse();
+            }
             break;
         case 'Curve':
+            if (pts.length == numCurvePts) {
+                drawCurve();
+            }
             break;
     }
 }
@@ -135,6 +146,45 @@ function drawRectangle() {
     canvas.requestRenderAll();
 
     pts = [];
+}
+function drawCircle() {
+    // Math to find radius of circle given two points
+    var outerX = pts[0][0] - pts[1][0];
+    var outerY = pts[0][1] - pts[1][1];
+    var rad = Math.sqrt(outerX*outerX + outerY*outerY);
+
+    let circle = new fabric.Circle({
+        originX: 'center',
+        originY: 'center',
+        left: pts[0][0],
+        top: pts[0][1],
+        radius: rad,
+        fill: fillColor,
+        stroke: strokeColor,
+        strokeWidth: StrokeWidth
+    });
+
+    // "add" circle onto canvas
+    canvas.add(circle);
+    canvas.requestRenderAll();
+
+    pts = [];
+}
+function drawEllipse() {
+
+    // // "add" ellipse onto canvas
+    // canvas.add(ellipse);
+    // canvas.requestRenderAll();
+
+    // pts = [];
+}
+function drawCurve() {
+
+    // // "add" curve onto canvas
+    // canvas.add(curve);
+    // canvas.requestRenderAll();
+
+    // pts = [];
 }
 
 // Set fill color for new shapes
