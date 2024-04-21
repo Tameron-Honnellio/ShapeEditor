@@ -21,6 +21,8 @@ const gridWidth = canvasWidth;
 const gridHeight = canvasHeight;
 const gridSize = 20;
 const gridColor = '#828282';
+const filename = "canvas.json";
+const jpegFilename = "canvas.jpg";
 var polyCount = 5;
 const numLinePts = 2;
 const numTrianglePts = 3;
@@ -43,6 +45,8 @@ function init() {
     canvas.on('object:moving', objectMoving);
     // Event listener for keydown event
     window.addEventListener("keydown", keyboardInput);
+    // Event listener for load json file input
+    document.getElementById("loadJSON").addEventListener("change", loadJSON);
 
     // Initialize grid but don't draw it
     initGrid();
@@ -342,14 +346,49 @@ function clearCanvas() {
         canvas.add(grid);
     }
 }
-function saveCanvas() {
-
+function saveAsJSON() {
+    // Stringify canvas as json
+    let jsonString = JSON.stringify(canvas);
+    // Pass json into a blob to create an object url
+    let blob = new Blob([jsonString], {type: "text/plain"});
+    let jsonURL = URL.createObjectURL(blob);
+    // Get anchor element from html
+    // Set href to object url
+    // Set download to file name
+    let anchor = document.getElementById("downloadAnchor");
+    anchor.href = jsonURL;
+    anchor.download = filename;
+    // Click anchor to download file
+    anchor.click();
+    // Free reference to object url
+    URL.revokeObjectURL(jsonURL);
 }
-function loadCanvas() {
-
+function loadJSON(fileEvent) {
+    let readFile = new FileReader();
+    readFile.onload = onLoadJSON;
+    readFile.readAsText(fileEvent.target.files[0]);
+}
+function onLoadJSON(fileEvent) {
+    // Parse string into json
+    let jsonFile = JSON.parse(fileEvent.target.result);
+    canvas.clear();
+    // Load json file, render canvas
+    canvas.loadFromJSON(jsonFile, canvas.requestRenderAll.bind(canvas));
 }
 function saveAsJPEG() {
-
+    // Get anchor element from html
+    let anchor = document.getElementById('jpegAnchor');
+    // Create object url from canvas
+    let urlString = canvas.toDataURL({
+        format: 'jpeg',
+        quality: 1.0,
+    });
+    // Set anchor href to object url
+    anchor.href = urlString;
+    // Set download to jpg filename
+    anchor.download = jpegFilename;
+    // Click anchor to download file
+    anchor.click();
 }
 
 function toggleGrid() {

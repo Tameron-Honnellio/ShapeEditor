@@ -35,6 +35,15 @@
     <input type="text" id="strokeWidth" size="1" onchange="setStrokeWidth(this)">
     <button type="button" id="enableGrid" onclick="toggleGrid()">Toggle Grid</button>
     <button type="button" id="enableSnap" onclick="toggleSnapToGrid()">Toggle Snap to Grid</button>
+    <a id="jpegAnchor">
+    <button type="button" id="saveAsJPEG" onclick="saveAsJPEG()">Save As JPEG</button>
+    </a>
+    <a id="downloadAnchor">
+    <button type="button" id="saveAsJSON" onclick="saveAsJSON()">Save As JSON</button>
+    </a>
+    <br>
+    <label>Load JSON:</label>
+    <input type="file" id="loadJSON">
 
     <canvas id='canvas' onkeydown="keyboardInput()"></canvas>
     <script src='main.js'></script>
