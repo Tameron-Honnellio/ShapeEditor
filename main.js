@@ -1,35 +1,151 @@
-var canvas;
-var drawMode = 'None';
-var color = '#ffffff';
-var rect;
+"use strict";
 
+var canvas;
+var fillColor = '#ffffff';
+var strokeColor = '#ff0000';
+var StrokeWidth = 1;
+var drawMode = 'None';
+var selecting = true;
+var drawing = false;
+var pts = [];
+const numLinePts = 2;
+const numTrianglePts = 3;
+const numRectanglePts = 2;
+
+// Initializer for fabric canvas
 function init() {
     canvas = new fabric.Canvas('canvas', {
         width: 800,
-        height: 500,
+        height: 550,
         backgroundColor: 'black'
     });
 
-    // create a rectangle object
-    rect = new fabric.Rect({
-        left: 100,
-        top: 100,
-        fill: color,
-        width: 20,
-        height: 20
-    });
-  
-    // "add" rectangle onto canvas
-    canvas.add(rect);
+    // Fabric event handler for mousedown
+    canvas.on('mouse:down', mouseDown);
 }
 init();
 
+// Handle fabric mousedown events
+function mouseDown(mousePos) {
+    let x = mousePos.pointer.x;
+    let y = mousePos.pointer.y;
+    if (drawing && !selecting) {
+        draw(x, y);
+    }
+}
+
+// Connected to canvas mode drop down menu in html
+// Set select or draw mode
+function setSelection(mode) {
+    if (mode.value == 'Draw') {
+        selecting = false;
+    } else {
+        selecting = true;
+        pts = [];
+    }
+}
+
+// Connected to shapes dropdown menu in html
+// Sets draw mode to chosen shape
 function setDrawMode(mode) {
     drawMode = mode.value;
-    console.log(drawMode);
+    if (drawMode == 'None') {
+        drawing = false;
+    } else {
+        drawing = true;
+    }
+    // console.log(drawMode);
 }
+
+// Draw shape depending on drawmode
+function draw(xPos, yPos) {
+    // Add new point (x, y) to pts[]
+    pts.push([xPos, yPos]);
+
+    switch(drawMode){
+        case 'Line':
+            if (pts.length == numLinePts) {
+                drawLine();
+            }   
+            break;
+        case 'PolyLine':
+            break;
+        case 'Triangle':
+            if (pts.length == numTrianglePts) {
+                drawTriangle();
+            }
+            break;
+        case 'Rectangle':
+            if (pts.length == numRectanglePts) {
+                drawRectangle();
+            }
+            break;
+        case 'Polygon':
+            break;
+        case 'Circle':
+            break;
+        case 'Ellipse':
+            break;
+        case 'Curve':
+            break;
+    }
+}
+
+function drawLine() {
+    let line = new fabric.Line([pts[0][0], pts[0][1], pts[1][0], pts[1][1]], {
+        stroke: strokeColor,
+        strokeWidth: StrokeWidth
+    });
+
+    // "add" line onto canvas
+    canvas.add(line);
+    canvas.requestRenderAll();
+
+    pts = [];
+}
+function drawTriangle() {
+    let triangle = new fabric.Polygon([{x:pts[0][0], y:pts[0][1]}, {x:pts[1][0], y:pts[1][1]}, {x:pts[2][0], y:pts[2][1]}], {
+        fill: fillColor,
+        stroke: strokeColor,
+        strokeWidth: StrokeWidth
+    });
+
+    // "add" triangle onto canvas
+    canvas.add(triangle);
+    canvas.requestRenderAll();
+
+    pts = [];
+}
+function drawRectangle() {
+    let rWidth = pts[1][0] - pts[0][0];
+    let rHeight = pts[1][1] - pts[0][1];
+
+    let rectangle = new fabric.Rect({
+        left: pts[0][0],
+        top: pts[0][1],
+        width: rWidth,
+        height: rHeight,
+        fill: fillColor,
+        stroke: strokeColor,
+        strokeWidth: StrokeWidth
+    });
+
+    // "add" rectangle onto canvas
+    canvas.add(rectangle);
+    canvas.requestRenderAll();
+
+    pts = [];
+}
+
+// Set fill color for new shapes
 function setColor(newColor) {
-    color = newColor.value;
-    console.log(color);
-    rect.set('fill', color);
+    fillColor = newColor.value;
+}
+// Set stroke color for new shapes
+function setStrokeColor(newStrokeColor) {
+    strokeColor = newStrokeColor.value;
+}
+// Set stroke width for new shapes
+function setStrokeWidth(newStrokeWidth) {
+    StrokeWidth = parseFloat(newStrokeWidth.value);
 }

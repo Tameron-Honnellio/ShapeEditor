@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShapeEditor</title>
+    <title>Shape Editor</title>
     <script src='fabric.min.js'></script>
 </head>
 <body>
+    <label>Canvas Mode:</label>
+    <select name="selection" id="selection" onchange="setSelection(this)">
+      <option value="Select">Select</option>
+      <option value="Draw">Draw</option>
+    </select>
     <label>Shapes:</label>
     <select name="Shapes" id="Shapes" onchange="setDrawMode(this)">
       <option value="None">None</option>
@@ -19,8 +24,12 @@
       <option value="Ellipse">Ellipse</option>
       <option value="Curve">Curve</option>
     </select>
-    <label>Color:</label>
-    <input type="color" id="color" onchange="setColor(this)">
+    <label>Fill Color:</label>
+    <input type="color" id="color" value="#ffffff" onchange="setColor(this)">
+    <label>Stroke Color:</label>
+    <input type="color" id="strokeColor" value="#ff0000" onchange="setStrokeColor(this)">
+    <label>Stroke Width:</label>
+    <input type="text" id="strokeWidth" size="1" onchange="setStrokeWidth(this)">
 
     <canvas id='canvas'></canvas>
     <script src='main.js'></script>
