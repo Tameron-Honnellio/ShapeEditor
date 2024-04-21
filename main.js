@@ -171,12 +171,26 @@ function drawCircle() {
     pts = [];
 }
 function drawEllipse() {
+    let Rx = Math.abs(pts[0][0] - pts[1][0])/2;
+    let Ry = Math.abs(pts[0][1] - pts[1][1])/2;
 
-    // // "add" ellipse onto canvas
-    // canvas.add(ellipse);
-    // canvas.requestRenderAll();
+    let ellipse = new fabric.Ellipse({
+        originX: 'center',
+        originY: 'center',
+        left: pts[0][0],
+        top: pts[0][1],
+        rx: Rx,
+        ry: Ry,
+        fill: fillColor,
+        stroke: strokeColor,
+        strokeWidth: StrokeWidth
+    });
 
-    // pts = [];
+    // "add" ellipse onto canvas
+    canvas.add(ellipse);
+    canvas.requestRenderAll();
+
+    pts = [];
 }
 function drawCurve() {
 
