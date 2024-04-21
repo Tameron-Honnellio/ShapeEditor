@@ -7,6 +7,7 @@
     <script src='fabric.min.js'></script>
 </head>
 <body>
+    <button type="button" id="clear" onclick="clearCanvas()">Clear</button>
     <label>Canvas Mode:</label>
     <select name="selection" id="selection" onchange="setSelection(this)">
       <option value="Select">Select</option>
@@ -24,14 +25,18 @@
       <option value="Ellipse">Ellipse</option>
       <option value="Curve">Curve</option>
     </select>
+    <label>Poly Count:</label>
+    <input type="text" id="polyCount" size="1" onchange="setPolyCount(this)">
     <label>Fill Color:</label>
-    <input type="color" id="color" value="#ffffff" onchange="setColor(this)">
+    <input type="color" id="color" value="#000000" onchange="setColor(this)">
     <label>Stroke Color:</label>
-    <input type="color" id="strokeColor" value="#ff0000" onchange="setStrokeColor(this)">
+    <input type="color" id="strokeColor" value="#ffffff" onchange="setStrokeColor(this)">
     <label>Stroke Width:</label>
     <input type="text" id="strokeWidth" size="1" onchange="setStrokeWidth(this)">
+    <button type="button" id="enableGrid" onclick="toggleGrid()">Toggle Grid</button>
+    <button type="button" id="enableSnap" onclick="toggleSnapToGrid()">Toggle Snap to Grid</button>
 
-    <canvas id='canvas'></canvas>
+    <canvas id='canvas' onkeydown="keyboardInput()"></canvas>
     <script src='main.js'></script>
 </body>
 </html>

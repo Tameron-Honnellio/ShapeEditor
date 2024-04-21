@@ -1,13 +1,26 @@
 "use strict";
 
 var canvas;
-var fillColor = '#ffffff';
-var strokeColor = '#ff0000';
-var StrokeWidth = 1;
+const canvasHeight = window.innerHeight;
+const canvasWidth = window.innerWidth;
+const canvasBackgroundColor = '#000000';
+var fillColor = '#000000';
+var strokeColor = '#ffffff';
+var StrokeWidth = 2;
 var selecting = true;
 var drawing = false;
 var drawMode = 'None';
 var pts = [];
+var undoBuffer = [];
+var keyBuffer = [];
+var enableGrid = false;
+var snapToGrid = false;
+var grid;
+const gridWidth = canvasWidth;
+const gridHeight = canvasHeight;
+const gridSize = 20;
+const gridColor = '#828282';
+var polyCount = 5;
 const numLinePts = 2;
 const numTrianglePts = 3;
 const numRectanglePts = 2;
@@ -16,23 +29,64 @@ const numCurvePts = 4;
 
 // Initializer for fabric canvas
 function init() {
+    // Initialize new fabric canvas
     canvas = new fabric.Canvas('canvas', {
-        width: 800,
-        height: 550,
-        backgroundColor: 'black'
+        width: canvasWidth,
+        height: canvasHeight,
+        backgroundColor: canvasBackgroundColor
     });
 
     // Fabric event handler for mousedown
     canvas.on('mouse:down', mouseDown);
+    // Fabric event handler for object move
+    canvas.on('object:moving', objectMoving);
+    // Event listener for keydown event
+    window.addEventListener("keydown", keyboardInput);
+
+    // Initialize grid but don't draw it
+    initGrid();
 }
 init();
 
 // Handle fabric mousedown events
 function mouseDown(mousePos) {
+    // Get x and y position of mouse down
     let x = mousePos.pointer.x;
     let y = mousePos.pointer.y;
     if (drawing && !selecting) {
         draw(x, y);
+    }
+}
+// Handle fabric object move events
+function objectMoving(object) {
+    // Handle snap to grid
+    if (snapToGrid && enableGrid) {
+        // Set selected object's origin (left, top) to grid intervals 
+        object.target.set({
+            left: Math.ceil(object.target.left / gridSize) * gridSize,
+            top: Math.ceil(object.target.top / gridSize) * gridSize
+        });
+    }
+    canvas.requestRenderAll();
+}
+// Handle keyboard input
+function keyboardInput(keyEvent) {
+    // Add pressed key to keybuffer
+    let key = keyEvent.keyCode;
+    keyBuffer.push(key);
+
+    // If key pressed was ctrl+c -> copy
+    if (keyBuffer[0] == 17 && keyBuffer[1] == 67) {
+        copy();
+        keyBuffer = [];
+    // If key pressed was ctrl+v -> paste
+    } else if (keyBuffer[0] == 17 && keyBuffer[1] == 86) {
+        paste();
+        keyBuffer = [];
+    }
+    // Reset key buffer
+    if (keyBuffer.length > 2) {
+        keyBuffer = [];
     }
 }
 
@@ -43,6 +97,7 @@ function setSelection(mode) {
         selecting = false;
     } else {
         selecting = true;
+        // If selecting, reset draw points
         pts = [];
     }
 }
@@ -59,9 +114,9 @@ function setDrawMode(mode) {
     // console.log(drawMode);
 }
 
-// Draw shape depending on drawmode
+// Draw shape depending on drawmode, called from mousedown event
 function draw(xPos, yPos) {
-    // Add new point (x, y) to pts[]
+    // Add new point to pts list: mousedown(x, y)
     pts.push([xPos, yPos]);
 
     switch(drawMode){
@@ -71,6 +126,9 @@ function draw(xPos, yPos) {
             }   
             break;
         case 'PolyLine':
+            if (pts.length == polyCount) {
+                drawPolyLine();
+            }
             break;
         case 'Triangle':
             if (pts.length == numTrianglePts) {
@@ -83,6 +141,9 @@ function draw(xPos, yPos) {
             }
             break;
         case 'Polygon':
+            if (pts.length == polyCount) {
+                drawPolygon();
+            }
             break;
         case 'Circle':
             if (pts.length == numCirclePts) {
@@ -110,6 +171,27 @@ function drawLine() {
 
     // "add" line onto canvas
     canvas.add(line);
+    canvas.requestRenderAll();
+
+    pts = [];
+}
+function drawPolyLine() {
+    var polyLinePoints = [];
+    for (var i = 0; i < pts.length; i++) {
+        polyLinePoints.push({
+            x: pts[i][0],
+            y: pts[i][1]
+        });
+    }
+
+    let polyLine = new fabric.Polyline(polyLinePoints, {
+        fill: false,
+        stroke: strokeColor,
+        strokeWidth: StrokeWidth
+    });
+
+    // add polyline to canvas
+    canvas.add(polyLine);
     canvas.requestRenderAll();
 
     pts = [];
@@ -143,6 +225,27 @@ function drawRectangle() {
 
     // "add" rectangle onto canvas
     canvas.add(rectangle);
+    canvas.requestRenderAll();
+
+    pts = [];
+}
+function drawPolygon() {
+    var polygonPoints = [];
+    for (var i = 0; i < pts.length; i++) {
+        polygonPoints.push({
+            x: pts[i][0],
+            y: pts[i][1]
+        });
+    }
+
+    let polygon = new fabric.Polygon(polygonPoints, {
+        fill: fillColor,
+        stroke: strokeColor,
+        strokeWidth: StrokeWidth
+    });
+
+    // add polygon to canvas
+    canvas.add(polygon);
     canvas.requestRenderAll();
 
     pts = [];
@@ -197,6 +300,7 @@ function drawCurve() {
     let pathName = "M " + pts[0][0] + "," + pts[0][1] + " C " + pts[1][0] + "," + pts[1][1] + " " + pts[2][0] + "," + pts[2][1] + " " + pts[3][0] + "," + pts[3][1];
 
     let curve = new fabric.Path(pathName, {
+        fill: false,
         stroke: strokeColor,
         strokeWidth: StrokeWidth
     });
@@ -219,4 +323,70 @@ function setStrokeColor(newStrokeColor) {
 // Set stroke width for new shapes
 function setStrokeWidth(newStrokeWidth) {
     StrokeWidth = parseFloat(newStrokeWidth.value);
+}
+// Set number of points for polyline and polygon
+function setPolyCount(newPolyCount) {
+    polyCount = parseInt(newPolyCount.value);
+}
+
+function clearCanvas() {
+    // TODO: add objects to redo buffer
+    // Clear canvas
+    canvas.clear();
+    // Reset canvas backgroundcolor
+    canvas.set({
+        backgroundColor: canvasBackgroundColor
+    });
+    // If grid was enabled, redraw it
+    if (enableGrid) {
+        canvas.add(grid);
+    }
+}
+
+function toggleGrid() {
+    enableGrid = !enableGrid;
+    // add or remove grid from canvas
+    if (enableGrid) {
+        canvas.add(grid);
+        canvas.sendToBack(grid);
+    } else {
+        canvas.remove(grid);
+    }
+
+    canvas.requestRenderAll();
+}
+function initGrid() {
+    // initialize grid
+    let gridLines = [];
+    // options for each line
+    let lineOptions = {
+        stroke: gridColor,
+        strokeWidth: StrokeWidth,
+        selectable: false
+    };
+    // create vertical lines
+    for (let i = Math.ceil(gridWidth / gridSize); i--;) {
+        gridLines.push(new fabric.Line([gridSize * i, 0, gridSize * i, gridHeight], lineOptions));
+    }
+    // create horizontal lines
+    for (let i = Math.ceil(gridHeight / gridSize); i--;) {
+        gridLines.push(new fabric.Line([0, gridSize * i, gridWidth, gridSize * i], lineOptions));
+    }
+
+    grid = new fabric.Group(gridLines, {
+        left: 0,
+        top: 0,
+        selectable: false
+    });
+    grid.hoverCursor = 'default';
+}
+function toggleSnapToGrid() {
+    snapToGrid = !snapToGrid;
+}
+
+function copy() {
+    console.log("Copy detected!!!");
+}
+function paste() {
+    console.log("Paste detected!!!");
 }
