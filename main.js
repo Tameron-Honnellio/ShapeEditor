@@ -16,6 +16,7 @@ var keyBuffer = [];
 var enableGrid = false;
 var snapToGrid = false;
 var grid;
+var clipboard;
 const gridWidth = canvasWidth;
 const gridHeight = canvasHeight;
 const gridSize = 20;
@@ -69,7 +70,7 @@ function objectMoving(object) {
     }
     canvas.requestRenderAll();
 }
-// Handle keyboard input
+// Handle keyboard input events
 function keyboardInput(keyEvent) {
     // Add pressed key to keybuffer
     let key = keyEvent.keyCode;
@@ -88,30 +89,6 @@ function keyboardInput(keyEvent) {
     if (keyBuffer.length > 2) {
         keyBuffer = [];
     }
-}
-
-// Connected to canvas mode drop down menu in html
-// Set select or draw mode
-function setSelection(mode) {
-    if (mode.value == 'Draw') {
-        selecting = false;
-    } else {
-        selecting = true;
-        // If selecting, reset draw points
-        pts = [];
-    }
-}
-
-// Connected to shapes dropdown menu in html
-// Sets draw mode to chosen shape
-function setDrawMode(mode) {
-    drawMode = mode.value;
-    if (drawMode == 'None') {
-        drawing = false;
-    } else {
-        drawing = true;
-    }
-    // console.log(drawMode);
 }
 
 // Draw shape depending on drawmode, called from mousedown event
@@ -312,6 +289,29 @@ function drawCurve() {
     pts = [];
 }
 
+// Connected to canvas mode drop down menu in html
+// Set select or draw mode
+function setSelection(mode) {
+    if (mode.value == 'Draw') {
+        selecting = false;
+    } else {
+        selecting = true;
+        // If selecting, reset draw points
+        pts = [];
+    }
+}
+
+// Connected to shapes dropdown menu in html
+// Sets draw mode to chosen shape
+function setDrawMode(mode) {
+    drawMode = mode.value;
+    if (drawMode == 'None') {
+        drawing = false;
+    } else {
+        drawing = true;
+    }
+    // console.log(drawMode);
+}
 // Set fill color for new shapes
 function setColor(newColor) {
     fillColor = newColor.value;
@@ -342,6 +342,15 @@ function clearCanvas() {
         canvas.add(grid);
     }
 }
+function saveCanvas() {
+
+}
+function loadCanvas() {
+
+}
+function saveAsJPEG() {
+
+}
 
 function toggleGrid() {
     enableGrid = !enableGrid;
@@ -356,7 +365,7 @@ function toggleGrid() {
     canvas.requestRenderAll();
 }
 function initGrid() {
-    // initialize grid
+    // initialize gridlines
     let gridLines = [];
     // options for each line
     let lineOptions = {
@@ -364,29 +373,73 @@ function initGrid() {
         strokeWidth: StrokeWidth,
         selectable: false
     };
-    // create vertical lines
+    // create vertical gridlines
     for (let i = Math.ceil(gridWidth / gridSize); i--;) {
         gridLines.push(new fabric.Line([gridSize * i, 0, gridSize * i, gridHeight], lineOptions));
     }
-    // create horizontal lines
+    // create horizontal gridlines
     for (let i = Math.ceil(gridHeight / gridSize); i--;) {
         gridLines.push(new fabric.Line([0, gridSize * i, gridWidth, gridSize * i], lineOptions));
     }
-
+    // Create unselectable group to contain all gridlines in one object
     grid = new fabric.Group(gridLines, {
         left: 0,
         top: 0,
         selectable: false
     });
+    // Change cursor to default when hovering over grid
     grid.hoverCursor = 'default';
 }
 function toggleSnapToGrid() {
     snapToGrid = !snapToGrid;
 }
 
+// Code for copy() and paste() adapted from http://fabricjs.com/copypaste
 function copy() {
-    console.log("Copy detected!!!");
+    // Copy selected object to clipboard
+    canvas.getActiveObject().clone(function(cloned) {
+        clipboard = cloned;
+    });
 }
 function paste() {
-    console.log("Paste detected!!!");
+    // Clone clipboard object to support multiple pastes with original copy
+    clipboard.clone(function(clonedObj) {
+        // Deselect copied object
+        canvas.discardActiveObject();
+        // Add position offset to cloned object (so it isn't pasted directly on top of original)
+        // Set to evented to allow canvas events to effect cloned object
+        clonedObj.set({
+            left: clonedObj.left + 10,
+            top: clonedObj.top + 10,
+            evented: true
+        });
+        // If original copy contained multiple objects
+        if (clonedObj.type == 'activeSelection') {
+            // active selection needs a reference to the canvas
+            clonedObj.canvas = canvas;
+            // Paste each cloned object in original copy to canvas
+            clonedObj.forEachObject(function(obj) {
+                canvas.add(obj);
+            });
+            // Fixes unselectability
+            clonedObj.setCoords();
+        } else {
+            // If original copy contained one object
+            // Paste cloned object to canvas
+            canvas.add(clonedObj);
+        }
+        // Add aditional offset to initial copied object to account for multiple pastes
+        clipboard.top += 10;
+        clipboard.left += 10;
+        // Select pasted object
+        canvas.setActiveObject(clonedObj);
+        canvas.requestRenderAll();
+    });
+
+}
+function undo() {
+
+}
+function redo() {
+
 }
