@@ -12,7 +12,7 @@ const numLinePts = 2;
 const numTrianglePts = 3;
 const numRectanglePts = 2;
 const numCirclePts = 2;
-const numCurvePts = 3;
+const numCurvePts = 4;
 
 // Initializer for fabric canvas
 function init() {
@@ -192,13 +192,20 @@ function drawEllipse() {
 
     pts = [];
 }
+// Cubic Bezier Curve
 function drawCurve() {
+    let pathName = "M " + pts[0][0] + "," + pts[0][1] + " C " + pts[1][0] + "," + pts[1][1] + " " + pts[2][0] + "," + pts[2][1] + " " + pts[3][0] + "," + pts[3][1];
 
-    // // "add" curve onto canvas
-    // canvas.add(curve);
-    // canvas.requestRenderAll();
+    let curve = new fabric.Path(pathName, {
+        stroke: strokeColor,
+        strokeWidth: StrokeWidth
+    });
 
-    // pts = [];
+    // "add" curve onto canvas
+    canvas.add(curve);
+    canvas.requestRenderAll();
+
+    pts = [];
 }
 
 // Set fill color for new shapes
