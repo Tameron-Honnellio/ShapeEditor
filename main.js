@@ -11,6 +11,7 @@ var StrokeWidth = 2;
 var selecting = true;
 var drawing = false;
 var drawMode = 'None';
+var interactMode = 'None';
 var userString;
 var pts = [];
 var undoBuffer = [];
@@ -64,6 +65,7 @@ function mouseDown(mousePos) {
     // Get x and y position of mouse down
     let x = mousePos.pointer.x;
     let y = mousePos.pointer.y;
+    // If user wants to draw, and isn't selecting
     if (drawing && !selecting) {
         draw(x, y);
     }
@@ -72,6 +74,11 @@ function mouseDown(mousePos) {
         canvas.isDrawingMode = true;
         canvas.freeDrawingBrush.color = strokeColor;
         canvas.freeDrawingBrush.width = StrokeWidth;
+    }
+    if (interactMode == 'Pan') {
+
+    } else if (interactMode == 'Zoom') {
+
     }
 }
 function pathCreated(event) {
@@ -345,9 +352,24 @@ function drawText() {
 function setSelection(mode) {
     if (mode.value == 'Draw') {
         selecting = false;
-    } else {
-        selecting = true;
+        interactMode = 'None';
+    } else if (mode.value == 'Pan') {
+        interactMode = 'Pan';
+        selecting = false;
+        drawing = false;
         canvas.isDrawingMode = false;
+        pts = [];
+    } else if (mode.value == 'Zoom') {
+        interactMode = 'Zoom';
+        selecting = false;
+        drawing = false;
+        canvas.isDrawingMode = false;
+        pts = [];
+    }else {
+        selecting = true;
+        drawing = false;
+        canvas.isDrawingMode = false;
+        interactMode = 'None';
         // If selecting, reset draw points
         pts = [];
     }

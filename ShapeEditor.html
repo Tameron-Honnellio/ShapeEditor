@@ -7,12 +7,21 @@
     <script src='fabric.min.js'></script>
 </head>
 <body>
-    <button type="button" id="clear" onclick="clearCanvas()">Clear</button>
     <label>Canvas Mode:</label>
     <select name="selection" id="selection" onchange="setSelection(this)">
       <option value="Select">Select</option>
       <option value="Draw">Draw</option>
+      <option value="Pan">Pan</option>
+      <option value="Zoom">Zoom</option>
     </select>
+    <button type="button" id="clear" onclick="clearCanvas()">Clear</button>
+    <button type="button" id="copy" onclick="copy()">Copy</button>
+    <button type="button" id="paste" onclick="paste()">Paste</button>
+    <button type="button" id="undo" onclick="undo()">Undo</button>
+    <button type="button" id="redo" onclick="redo()">Redo</button>
+    <button type="button" id="enableGrid" onclick="toggleGrid()">Toggle Grid</button>
+    <button type="button" id="enableSnap" onclick="toggleSnapToGrid()">Toggle Snap to Grid</button>
+    <br>
     <label>Shapes:</label>
     <select name="Shapes" id="Shapes" onchange="setDrawMode(this)">
       <option value="None">None</option>
@@ -37,15 +46,13 @@
     <input type="text" id="strokeWidth" size="1" onchange="setStrokeWidth(this)">
     <label>Text:</label>
     <input type="text" id="userText" size="1" onchange="setUserText(this)">
-    <button type="button" id="enableGrid" onclick="toggleGrid()">Toggle Grid</button>
-    <button type="button" id="enableSnap" onclick="toggleSnapToGrid()">Toggle Snap to Grid</button>
+    <br>
     <a id="jpegAnchor">
     <button type="button" id="saveAsJPEG" onclick="saveAsJPEG()">Save As JPEG</button>
     </a>
     <a id="downloadAnchor">
     <button type="button" id="saveAsJSON" onclick="saveAsJSON()">Save As JSON</button>
     </a>
-    <br>
     <label>Load JSON:</label>
     <input type="file" id="loadJSON">
 
