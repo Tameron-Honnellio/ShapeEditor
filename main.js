@@ -53,6 +53,7 @@ function init() {
     canvas.on('mouse:up', mouseUp);
     canvas.on('mouse:move', mouseMove);
     canvas.on('path:created', pathCreated);
+    canvas.on('mouse:wheel', mouseWheel);
     // Fabric event handler for object move
     canvas.on('object:moving', objectMoving);
     // Save canvas state
@@ -100,6 +101,18 @@ function mouseMove(mousePos) {
         canvas.relativePan({x: newX - relX, y: newY - relY});
         relX = newX;
         relY = newY;
+    }
+}
+function mouseWheel(event) {
+    if (interactMode == 'Zoom') {
+        var delta = event.e.deltaY;
+        var zoom = canvas.getZoom();
+        zoom *= 0.999 ** delta;
+        if (zoom > 20) zoom = 20;
+        if (zoom < 0.01) zoom = 0.01;
+        canvas.setZoom(zoom);
+        event.e.preventDefault();
+        event.e.stopPropagation();
     }
 }
 function pathCreated(event) {
