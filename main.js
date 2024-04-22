@@ -65,6 +65,8 @@ function init() {
     window.addEventListener("keydown", keyboardInput);
     // Event listener for load json file input
     document.getElementById("loadJSON").addEventListener("change", loadJSON);
+    // Event listener for upload png
+    document.getElementById("uploadPng").addEventListener("change", loadPNG);
 
     // Initialize grid but don't draw it
     initGrid();
@@ -525,6 +527,17 @@ function onLoadJSON(fileEvent) {
     // Load json file, render canvas
     canvas.loadFromJSON(jsonFile, canvas.requestRenderAll.bind(canvas));
     // Save canvas state
+    saveState();
+}
+function loadPNG(fileEvent) {
+    var objURL = URL.createObjectURL(fileEvent.target.files[0]);
+
+    fabric.Image.fromURL(objURL, function(image){
+        image.scale(0.5);
+        canvas.add(image);
+    });
+
+    canvas.requestRenderAll();
     saveState();
 }
 function saveAsJPEG() {

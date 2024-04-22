@@ -36,16 +36,18 @@
       <option value="Brush">Brush</option>
       <option value="Text">Text</option>
     </select>
-    <label>Poly Count:</label>
-    <input type="text" id="polyCount" size="1" onchange="setPolyCount(this)">
     <label>Fill Color:</label>
     <input type="color" id="color" value="#000000" onchange="setColor(this)">
     <label>Stroke Color:</label>
     <input type="color" id="strokeColor" value="#ffffff" onchange="setStrokeColor(this)">
     <label>Stroke Width:</label>
     <input type="text" id="strokeWidth" size="1" onchange="setStrokeWidth(this)">
+    <label>Poly Count:</label>
+    <input type="text" id="polyCount" size="1" onchange="setPolyCount(this)">
     <label>Text:</label>
     <input type="text" id="userText" size="1" onchange="setUserText(this)">
+    <Label>Add Image:</Label>
+    <input type="file" id="uploadPng">
     <br>
     <a id="jpegAnchor">
     <button type="button" id="saveAsJPEG" onclick="saveAsJPEG()">Save As JPEG</button>
