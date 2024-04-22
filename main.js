@@ -48,12 +48,13 @@ function init() {
         backgroundColor: canvasBackgroundColor
     });
 
-    // Fabric event handler for mousedown
+    // Fabric event handler for mouse events
     canvas.on('mouse:down', mouseDown);
     canvas.on('mouse:up', mouseUp);
     canvas.on('mouse:move', mouseMove);
-    canvas.on('path:created', pathCreated);
     canvas.on('mouse:wheel', mouseWheel);
+    // Fabric event handler for path created (used during brush draw)
+    canvas.on('path:created', pathCreated);
     // Fabric event handler for object move
     canvas.on('object:moving', objectMoving);
     // Save canvas state
@@ -96,26 +97,35 @@ function mouseUp() {
 }
 function mouseMove(mousePos) {
     if (panning) {
+        // Mouse move event pos
         let newX = mousePos.pointer.x;
         let newY = mousePos.pointer.y;
+        // Pan the canvas relative to previous mouse position
         canvas.relativePan({x: newX - relX, y: newY - relY});
+        // Update previous mouse position
         relX = newX;
         relY = newY;
     }
 }
 function mouseWheel(event) {
     if (interactMode == 'Zoom') {
+        // Get amount scroll wheel rotatated
         var delta = event.e.deltaY;
+        // Get canvas zoom value
         var zoom = canvas.getZoom();
+        // update zoom according to delta
         zoom *= 0.999 ** delta;
+        // Hard lock zoom between 20, and 0.01
         if (zoom > 20) zoom = 20;
         if (zoom < 0.01) zoom = 0.01;
+        // Set canvas zoom
         canvas.setZoom(zoom);
         event.e.preventDefault();
         event.e.stopPropagation();
     }
 }
 function pathCreated(event) {
+    // Instantiate path as object, this is called after mouseup during brush mode
     event.path.set();
     canvas.requestRenderAll();
     saveState();
