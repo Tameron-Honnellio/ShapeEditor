@@ -24,6 +24,8 @@
       <option value="Circle">Circle</option>
       <option value="Ellipse">Ellipse</option>
       <option value="Curve">Curve</option>
+      <option value="Brush">Brush</option>
+      <option value="Text">Text</option>
     </select>
     <label>Poly Count:</label>
     <input type="text" id="polyCount" size="1" onchange="setPolyCount(this)">
@@ -33,6 +35,8 @@
     <input type="color" id="strokeColor" value="#ffffff" onchange="setStrokeColor(this)">
     <label>Stroke Width:</label>
     <input type="text" id="strokeWidth" size="1" onchange="setStrokeWidth(this)">
+    <label>Text:</label>
+    <input type="text" id="userText" size="1" onchange="setUserText(this)">
     <button type="button" id="enableGrid" onclick="toggleGrid()">Toggle Grid</button>
     <button type="button" id="enableSnap" onclick="toggleSnapToGrid()">Toggle Snap to Grid</button>
     <a id="jpegAnchor">

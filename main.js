@@ -11,6 +11,7 @@ var StrokeWidth = 2;
 var selecting = true;
 var drawing = false;
 var drawMode = 'None';
+var userString;
 var pts = [];
 var undoBuffer = [];
 var redoBuffer = [];
@@ -43,6 +44,7 @@ function init() {
 
     // Fabric event handler for mousedown
     canvas.on('mouse:down', mouseDown);
+    canvas.on('path:created', pathCreated);
     // Fabric event handler for object move
     canvas.on('object:moving', objectMoving);
     // Save canvas state
@@ -65,6 +67,17 @@ function mouseDown(mousePos) {
     if (drawing && !selecting) {
         draw(x, y);
     }
+    // If free draw is enabled, free draw
+    if (canvas.isDrawingMode) {
+        canvas.isDrawingMode = true;
+        canvas.freeDrawingBrush.color = strokeColor;
+        canvas.freeDrawingBrush.width = StrokeWidth;
+    }
+}
+function pathCreated(event) {
+    event.path.set();
+    canvas.requestRenderAll();
+    saveState();
 }
 // Handle fabric object move events
 function objectMoving(object) {
@@ -155,6 +168,10 @@ function draw(xPos, yPos) {
                 drawCurve();
             }
             break;
+        case 'Text':
+            if (userString && (pts.length == 1)) {
+                drawText();
+            }
     }
 
     // Save canvas state
@@ -309,6 +326,19 @@ function drawCurve() {
 
     pts = [];
 }
+function drawText() {
+    let text = new fabric.Text(userString, {
+        left: pts[0][0],
+        top: pts[0][1],
+        fill: fillColor
+    });
+
+    // add text onto canvas
+    canvas.add(text);
+    canvas.requestRenderAll();
+
+    pts = [];
+}
 
 // Connected to canvas mode drop down menu in html
 // Set select or draw mode
@@ -317,6 +347,7 @@ function setSelection(mode) {
         selecting = false;
     } else {
         selecting = true;
+        canvas.isDrawingMode = false;
         // If selecting, reset draw points
         pts = [];
     }
@@ -328,8 +359,13 @@ function setDrawMode(mode) {
     drawMode = mode.value;
     if (drawMode == 'None') {
         drawing = false;
+        canvas.isDrawingMode = false;
+    } else if (drawMode == 'Brush') {
+        drawing = false;
+        canvas.isDrawingMode = true;
     } else {
         drawing = true;
+        canvas.isDrawingMode = false;
     }
     // console.log(drawMode);
 }
@@ -348,6 +384,9 @@ function setStrokeWidth(newStrokeWidth) {
 // Set number of points for polyline and polygon
 function setPolyCount(newPolyCount) {
     polyCount = parseInt(newPolyCount.value);
+}
+function setUserText(newText) {
+    userString = newText.value;
 }
 
 function clearCanvas() {
