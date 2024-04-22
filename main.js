@@ -12,6 +12,7 @@ var selecting = true;
 var drawing = false;
 var drawMode = 'None';
 var interactMode = 'None';
+var panning = false;
 var userString;
 var pts = [];
 var undoBuffer = [];
@@ -33,6 +34,10 @@ const numTrianglePts = 3;
 const numRectanglePts = 2;
 const numCirclePts = 2;
 const numCurvePts = 4;
+var x;
+var y;
+var relX;
+var relY;
 
 // Initializer for fabric canvas
 function init() {
@@ -45,6 +50,8 @@ function init() {
 
     // Fabric event handler for mousedown
     canvas.on('mouse:down', mouseDown);
+    canvas.on('mouse:up', mouseUp);
+    canvas.on('mouse:move', mouseMove);
     canvas.on('path:created', pathCreated);
     // Fabric event handler for object move
     canvas.on('object:moving', objectMoving);
@@ -63,8 +70,10 @@ init();
 // Handle fabric mousedown events
 function mouseDown(mousePos) {
     // Get x and y position of mouse down
-    let x = mousePos.pointer.x;
-    let y = mousePos.pointer.y;
+    x = mousePos.pointer.x;
+    y = mousePos.pointer.y;
+    relX = mousePos.pointer.x;
+    relY = mousePos.pointer.y;
     // If user wants to draw, and isn't selecting
     if (drawing && !selecting) {
         draw(x, y);
@@ -76,9 +85,21 @@ function mouseDown(mousePos) {
         canvas.freeDrawingBrush.width = StrokeWidth;
     }
     if (interactMode == 'Pan') {
-
-    } else if (interactMode == 'Zoom') {
-
+        panning = true;
+    }
+}
+function mouseUp() {
+    if (interactMode == 'Pan' && panning) {
+        panning = false;
+    }
+}
+function mouseMove(mousePos) {
+    if (panning) {
+        let newX = mousePos.pointer.x;
+        let newY = mousePos.pointer.y;
+        canvas.relativePan({x: newX - relX, y: newY - relY});
+        relX = newX;
+        relY = newY;
     }
 }
 function pathCreated(event) {
