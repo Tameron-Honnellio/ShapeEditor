@@ -45,6 +45,8 @@ function init() {
     canvas = new fabric.Canvas('canvas', {
         width: canvasWidth,
         height: canvasHeight,
+        fireRightClick: true,
+        stopContextMenu: true,
         backgroundColor: canvasBackgroundColor
     });
 
@@ -88,12 +90,15 @@ function mouseDown(mousePos) {
     if (canvas.isDrawingMode) {
         freeDraw();
     }
-    if (interactMode == 'Pan') {
+    if (interactMode == 'Pan' || mousePos.button == 3) {
         panning = true;
     }
 }
-function mouseUp() {
+function mouseUp(mouseEvent) {
     if (interactMode == 'Pan' && panning) {
+        panning = false;
+    }
+    if (mouseEvent.button == 3) {
         panning = false;
     }
 }
@@ -103,9 +108,7 @@ function mouseMove(mousePos) {
     }
 }
 function mouseWheel(event) {
-    if (interactMode == 'Zoom') {
-        zoom(event);
-    }
+    zoom(event);
 }
 function pathCreated(event) {
     // Instantiate path as object, this is called after mouseup during brush mode
