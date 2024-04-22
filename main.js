@@ -1,6 +1,7 @@
 "use strict";
 
 var canvas;
+var canvasState;
 const canvasHeight = window.innerHeight;
 const canvasWidth = window.innerWidth;
 const canvasBackgroundColor = '#000000';
@@ -12,6 +13,7 @@ var drawing = false;
 var drawMode = 'None';
 var pts = [];
 var undoBuffer = [];
+var redoBuffer = [];
 var keyBuffer = [];
 var enableGrid = false;
 var snapToGrid = false;
@@ -43,6 +45,8 @@ function init() {
     canvas.on('mouse:down', mouseDown);
     // Fabric event handler for object move
     canvas.on('object:moving', objectMoving);
+    // Save canvas state
+    saveState();
     // Event listener for keydown event
     window.addEventListener("keydown", keyboardInput);
     // Event listener for load json file input
@@ -73,6 +77,8 @@ function objectMoving(object) {
         });
     }
     canvas.requestRenderAll();
+    // Save canvas state
+    saveState();
 }
 // Handle keyboard input events
 function keyboardInput(keyEvent) {
@@ -80,13 +86,21 @@ function keyboardInput(keyEvent) {
     let key = keyEvent.keyCode;
     keyBuffer.push(key);
 
-    // If key pressed was ctrl+c -> copy
-    if (keyBuffer[0] == 17 && keyBuffer[1] == 67) {
+    if (keyBuffer[1] == 67 && keyBuffer[0] == 17) {
+        // If key pressed was ctrl+c -> copy
         copy();
         keyBuffer = [];
-    // If key pressed was ctrl+v -> paste
-    } else if (keyBuffer[0] == 17 && keyBuffer[1] == 86) {
+    } else if (keyBuffer[1] == 86 && keyBuffer[0] == 17) {
+        // If key pressed was ctrl+v -> paste
         paste();
+        keyBuffer = [];
+    } else if (keyBuffer[1] == 90 && keyBuffer[0] == 17) {
+        // If key pressed was ctrl+z -> undo
+        undo();
+        keyBuffer = [];
+    } else if (keyBuffer[1] == 89 && keyBuffer[0] == 17) {
+        // If key pressed was ctrl+y -> redo
+        redo();
         keyBuffer = [];
     }
     // Reset key buffer
@@ -142,6 +156,9 @@ function draw(xPos, yPos) {
             }
             break;
     }
+
+    // Save canvas state
+    saveState();
 }
 
 function drawLine() {
@@ -334,7 +351,6 @@ function setPolyCount(newPolyCount) {
 }
 
 function clearCanvas() {
-    // TODO: add objects to redo buffer
     // Clear canvas
     canvas.clear();
     // Reset canvas backgroundcolor
@@ -345,6 +361,8 @@ function clearCanvas() {
     if (enableGrid) {
         canvas.add(grid);
     }
+    // Save canvas state
+    saveState();
 }
 function saveAsJSON() {
     // Stringify canvas as json
@@ -374,6 +392,8 @@ function onLoadJSON(fileEvent) {
     canvas.clear();
     // Load json file, render canvas
     canvas.loadFromJSON(jsonFile, canvas.requestRenderAll.bind(canvas));
+    // Save canvas state
+    saveState();
 }
 function saveAsJPEG() {
     // Get anchor element from html
@@ -402,6 +422,8 @@ function toggleGrid() {
     }
 
     canvas.requestRenderAll();
+    // Save canvas state
+    saveState();
 }
 function initGrid() {
     // initialize gridlines
@@ -473,12 +495,37 @@ function paste() {
         // Select pasted object
         canvas.setActiveObject(clonedObj);
         canvas.requestRenderAll();
+        // Save canvas state
+        saveState();
     });
 
 }
-function undo() {
 
+function saveState() {
+    // reset redo buffer
+    redoBuffer = [];
+    // If there is a current canvas state
+    if (canvasState) {
+        // Push it to undo buffer
+        undoBuffer.push(canvasState);
+    }
+    // Save current canvas state
+    canvasState = JSON.stringify(canvas);
+}
+function undo() {
+    resetState(undoBuffer, redoBuffer);
 }
 function redo() {
+    resetState(redoBuffer, undoBuffer);
+}
+function resetState(prevBuffer, toBuffer) {
+    // Set current state to toBuffer
+    toBuffer.push(canvasState);
+    // Retrieve previous state from prevBuffer
+    canvasState = prevBuffer.pop();
+    // Clear canvas
+    canvas.clear();
+    // Load canvas state into canvas and render
+    canvas.loadFromJSON(canvasState, canvas.requestRenderAll.bind(canvas));
 
 }
