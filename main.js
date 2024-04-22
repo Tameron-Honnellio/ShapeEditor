@@ -48,6 +48,8 @@ function init() {
         backgroundColor: canvasBackgroundColor
     });
 
+    canvas.preserveObjectStacking = true;
+
     // Fabric event handler for mouse events
     canvas.on('mouse:down', mouseDown);
     canvas.on('mouse:up', mouseUp);
@@ -82,9 +84,7 @@ function mouseDown(mousePos) {
     }
     // If free draw is enabled, free draw
     if (canvas.isDrawingMode) {
-        canvas.isDrawingMode = true;
-        canvas.freeDrawingBrush.color = strokeColor;
-        canvas.freeDrawingBrush.width = StrokeWidth;
+        freeDraw();
     }
     if (interactMode == 'Pan') {
         panning = true;
@@ -97,36 +97,20 @@ function mouseUp() {
 }
 function mouseMove(mousePos) {
     if (panning) {
-        // Mouse move event pos
-        let newX = mousePos.pointer.x;
-        let newY = mousePos.pointer.y;
-        // Pan the canvas relative to previous mouse position
-        canvas.relativePan({x: newX - relX, y: newY - relY});
-        // Update previous mouse position
-        relX = newX;
-        relY = newY;
+        pan(mousePos);
     }
 }
 function mouseWheel(event) {
     if (interactMode == 'Zoom') {
-        // Get amount scroll wheel rotatated
-        var delta = event.e.deltaY;
-        // Get canvas zoom value
-        var zoom = canvas.getZoom();
-        // update zoom according to delta
-        zoom *= 0.999 ** delta;
-        // Hard lock zoom between 20, and 0.01
-        if (zoom > 20) zoom = 20;
-        if (zoom < 0.01) zoom = 0.01;
-        // Set canvas zoom
-        canvas.setZoom(zoom);
-        event.e.preventDefault();
-        event.e.stopPropagation();
+        zoom(event);
     }
 }
 function pathCreated(event) {
     // Instantiate path as object, this is called after mouseup during brush mode
-    event.path.set();
+    // event.path.set();
+    var newPathObj = event.path;
+    newPathObj.selectable = false;
+    canvas.add(newPathObj);
     canvas.requestRenderAll();
     saveState();
 }
@@ -223,6 +207,7 @@ function draw(xPos, yPos) {
             if (userString && (pts.length == 1)) {
                 drawText();
             }
+            break;
     }
 
     // Save canvas state
@@ -232,7 +217,9 @@ function draw(xPos, yPos) {
 function drawLine() {
     let line = new fabric.Line([pts[0][0], pts[0][1], pts[1][0], pts[1][1]], {
         stroke: strokeColor,
-        strokeWidth: StrokeWidth
+        strokeWidth: StrokeWidth,
+        selectable: false,
+        hoverCursor: 'default'
     });
 
     // "add" line onto canvas
@@ -253,7 +240,9 @@ function drawPolyLine() {
     let polyLine = new fabric.Polyline(polyLinePoints, {
         fill: false,
         stroke: strokeColor,
-        strokeWidth: StrokeWidth
+        strokeWidth: StrokeWidth,
+        selectable: false,
+        hoverCursor: 'default'
     });
 
     // add polyline to canvas
@@ -266,7 +255,9 @@ function drawTriangle() {
     let triangle = new fabric.Polygon([{x:pts[0][0], y:pts[0][1]}, {x:pts[1][0], y:pts[1][1]}, {x:pts[2][0], y:pts[2][1]}], {
         fill: fillColor,
         stroke: strokeColor,
-        strokeWidth: StrokeWidth
+        strokeWidth: StrokeWidth,
+        selectable: false,
+        hoverCursor: 'default'
     });
 
     // "add" triangle onto canvas
@@ -286,7 +277,9 @@ function drawRectangle() {
         height: rHeight,
         fill: fillColor,
         stroke: strokeColor,
-        strokeWidth: StrokeWidth
+        strokeWidth: StrokeWidth,
+        selectable: false,
+        hoverCursor: 'default'
     });
 
     // "add" rectangle onto canvas
@@ -307,7 +300,9 @@ function drawPolygon() {
     let polygon = new fabric.Polygon(polygonPoints, {
         fill: fillColor,
         stroke: strokeColor,
-        strokeWidth: StrokeWidth
+        strokeWidth: StrokeWidth,
+        selectable: false,
+        hoverCursor: 'default'
     });
 
     // add polygon to canvas
@@ -330,7 +325,9 @@ function drawCircle() {
         radius: rad,
         fill: fillColor,
         stroke: strokeColor,
-        strokeWidth: StrokeWidth
+        strokeWidth: StrokeWidth,
+        selectable: false,
+        hoverCursor: 'default'
     });
 
     // "add" circle onto canvas
@@ -352,7 +349,9 @@ function drawEllipse() {
         ry: Ry,
         fill: fillColor,
         stroke: strokeColor,
-        strokeWidth: StrokeWidth
+        strokeWidth: StrokeWidth,
+        selectable: false,
+        hoverCursor: 'default'
     });
 
     // "add" ellipse onto canvas
@@ -368,7 +367,9 @@ function drawCurve() {
     let curve = new fabric.Path(pathName, {
         fill: false,
         stroke: strokeColor,
-        strokeWidth: StrokeWidth
+        strokeWidth: StrokeWidth,
+        selectable: false,
+        hoverCursor: 'default'
     });
 
     // "add" curve onto canvas
@@ -379,9 +380,13 @@ function drawCurve() {
 }
 function drawText() {
     let text = new fabric.Text(userString, {
+        originX: 'center',
+        originY: 'center',
         left: pts[0][0],
         top: pts[0][1],
-        fill: fillColor
+        fill: fillColor,
+        selectable: false,
+        hoverCursor: 'default'
     });
 
     // add text onto canvas
@@ -389,6 +394,11 @@ function drawText() {
     canvas.requestRenderAll();
 
     pts = [];
+}
+function freeDraw() {
+    canvas.isDrawingMode = true;
+    canvas.freeDrawingBrush.color = strokeColor;
+    canvas.freeDrawingBrush.width = StrokeWidth;
 }
 
 // Connected to canvas mode drop down menu in html
@@ -416,9 +426,24 @@ function setSelection(mode) {
         interactMode = 'None';
         // If selecting, reset draw points
         pts = [];
+        // Set canvas selection to true
+        canvas.forEachObject(function(obj){
+            obj.selectable = true;
+            obj.hoverCursor = 'pointer';
+        });
     }
-}
+    // If the canvas mode is not selection
+    if (!selecting) {
+        // Set canvas selection to false
+        canvas.forEachObject(function(obj){
+            obj.selectable = false;
+            obj.hoverCursor = 'default';
+        });
+    }
 
+    canvas.requestRenderAll();
+    saveState();
+}
 // Connected to shapes dropdown menu in html
 // Sets draw mode to chosen shape
 function setDrawMode(mode) {
@@ -470,6 +495,8 @@ function clearCanvas() {
     saveState();
 }
 function saveAsJSON() {
+    // Remove grid
+    canvas.remove(grid);
     // Stringify canvas as json
     let jsonString = JSON.stringify(canvas);
     // Pass json into a blob to create an object url
@@ -633,4 +660,30 @@ function resetState(prevBuffer, toBuffer) {
     // Load canvas state into canvas and render
     canvas.loadFromJSON(canvasState, canvas.requestRenderAll.bind(canvas));
 
+}
+function pan(mousePos) {
+    // Mouse move event pos
+    let newX = mousePos.pointer.x;
+    let newY = mousePos.pointer.y;
+    // Pan the canvas relative to previous mouse position
+    canvas.relativePan({x: newX - relX, y: newY - relY});
+    // Update previous mouse position
+    relX = newX;
+    relY = newY;
+}
+function zoom(event) {
+    // Get amount scroll wheel rotatated
+    var delta = event.e.deltaY;
+    // Get canvas zoom value
+    var zoom = canvas.getZoom();
+    // update zoom according to delta
+    zoom *= 0.999 ** delta;
+    // Hard lock zoom between 20, and 0.01
+    if (zoom > 20) zoom = 20;
+    if (zoom < 0.01) zoom = 0.01;
+    // Set canvas zoom
+    // canvas.setZoom(zoom);
+    canvas.zoomToPoint({x: event.e.offsetX , y: event.e.offsetY}, zoom);
+    event.e.preventDefault();
+    event.e.stopPropagation();
 }
