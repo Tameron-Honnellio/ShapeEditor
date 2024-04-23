@@ -17,7 +17,6 @@ var userString;
 var pts = [];
 var undoBuffer = [];
 var redoBuffer = [];
-var keyBuffer = [];
 var enableGrid = false;
 var snapToGrid = false;
 var grid;
@@ -69,6 +68,10 @@ function init() {
     document.getElementById("loadJSON").addEventListener("change", loadJSON);
     // Event listener for upload png
     document.getElementById("uploadPng").addEventListener("change", loadPNG);
+    // Prevent text entry from triggering keyboard shortcuts
+    document.getElementById("userText").addEventListener("keydown", function(event){
+        event.stopImmediatePropagation();
+    });
 
     // Initialize grid but don't draw it
     initGrid();
@@ -137,28 +140,57 @@ function objectMoving(object) {
 function keyboardInput(keyEvent) {
     // Add pressed key to keybuffer
     let key = keyEvent.keyCode;
-    keyBuffer.push(key);
+    // console.log(key);
 
-    if (keyBuffer[1] == 67 && keyBuffer[0] == 17) {
-        // If key pressed was ctrl+c -> copy
-        copy();
-        keyBuffer = [];
-    } else if (keyBuffer[1] == 86 && keyBuffer[0] == 17) {
-        // If key pressed was ctrl+v -> paste
-        paste();
-        keyBuffer = [];
-    } else if (keyBuffer[1] == 90 && keyBuffer[0] == 17) {
-        // If key pressed was ctrl+z -> undo
-        undo();
-        keyBuffer = [];
-    } else if (keyBuffer[1] == 89 && keyBuffer[0] == 17) {
-        // If key pressed was ctrl+y -> redo
-        redo();
-        keyBuffer = [];
-    }
-    // Reset key buffer
-    if (keyBuffer.length > 2) {
-        keyBuffer = [];
+    switch (key) {
+        case 67:
+            // If key pressed was c -> copy
+            copy();
+            break;
+        case 86:
+            // If key pressed was v -> paste
+            paste();
+            break;
+        case 90:
+            // If key pressed was z -> undo
+            undo();
+            break;
+        case 89:
+            // If key pressed was y -> redo
+            redo();
+            break;
+        case 46:
+            // clear canvas -> del
+            clearCanvas();
+            break;
+        case 66:
+            // brush -> b
+            freeDraw();
+            break;
+        case 71:
+            // grid -> g
+            toggleGrid();
+            break;
+        case 72:
+            // snap grid -> h
+            toggleSnapToGrid();
+            break;
+        case 83:
+            // save -> s
+            saveAsJPEG();
+            break;
+        case 74:
+            // save json -> j
+            saveAsJSON();
+            break;
+        case 76:
+            // load json -> l
+            document.getElementById('loadJSON').click();
+            break;
+        case 85:
+            // upload image -> u
+            document.getElementById('uploadPng').click();
+            break;
     }
 }
 
@@ -533,10 +565,14 @@ function onLoadJSON(fileEvent) {
     saveState();
 }
 function loadPNG(fileEvent) {
+    // Create object url for file
     var objURL = URL.createObjectURL(fileEvent.target.files[0]);
 
+    // Create fabric object from object url
     fabric.Image.fromURL(objURL, function(image){
+        // Scale image x0.5
         image.scale(0.5);
+        // Add image to canvas
         canvas.add(image);
     });
 
