@@ -46,7 +46,7 @@ Bug Help:
     - (if selecting) Set Shapes -> None
     - Try to draw / select again
 
-Sources of Help:
+Main Sources of Help:
 http://fabricjs.com/fabric-intro-part-1
 http://fabricjs.com/docs/index.html
 http://fabricjs.com/copypaste

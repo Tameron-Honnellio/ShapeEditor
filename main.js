@@ -72,7 +72,12 @@ function init() {
     document.getElementById("userText").addEventListener("keydown", function(event){
         event.stopImmediatePropagation();
     });
-
+    document.getElementById("strokeWidth").addEventListener("keydown", function(event){
+        event.stopImmediatePropagation();
+    });
+    document.getElementById("polyCount").addEventListener("keydown", function(event){
+        event.stopImmediatePropagation();
+    });
     // Initialize grid but don't draw it
     initGrid();
 }
