@@ -47,7 +47,7 @@ Bug Help:
     - Try to draw / select again
 
 Main Sources of Help:
-http://fabricjs.com/fabric-intro-part-1
-http://fabricjs.com/docs/index.html
-http://fabricjs.com/copypaste
-https://www.youtube.com/watch?v=qisBBCae7iE
+- http://fabricjs.com/fabric-intro-part-1
+- http://fabricjs.com/docs/index.html
+- http://fabricjs.com/copypaste
+- https://www.youtube.com/watch?v=qisBBCae7iE
