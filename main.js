@@ -598,6 +598,8 @@ function saveAsJPEG() {
     anchor.download = jpegFilename;
     // Click anchor to download file
     anchor.click();
+    // Free reference to object url
+    URL.revokeObjectURL(jsonURL);
 }
 
 function toggleGrid() {
