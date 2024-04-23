@@ -5,7 +5,7 @@ var canvasState;
 const canvasHeight = window.innerHeight;
 const canvasWidth = window.innerWidth;
 const canvasBackgroundColor = '#000000';
-var fillColor = '#000000';
+var fillColor = '#ffffff';
 var strokeColor = '#ffffff';
 var StrokeWidth = 2;
 var selecting = true;
