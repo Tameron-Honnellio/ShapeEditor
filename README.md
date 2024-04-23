@@ -2,6 +2,7 @@
  COMP Graphics Final - Shape Editor Using Canvas & FabricJS
 
  Tools:
+ - JavaScript
  - FabricJS : http://fabricjs.com/
     - Free Library for Canvas Drawing and Management
 
